@@ -136,7 +136,7 @@ sub new {
 
 Parse option configuration for C<Getopt::Long>.
 
-This method reproduces enough code as found in
+This method reproduces just enough code as found in
 C<Getopt::Long::GetOptionsFromArray()>, while also calling functions in that
 module, so to parse the same exact C<Getopt::Long> configuration input.
 
@@ -253,14 +253,16 @@ This is a string representing the format for executing your application.
 
 =item * B<descriptions>
 
-This is an array reference of options with descriptions. The format is as follows:
+This is an array reference of options with descriptions. The order of the
+options provided to the C<descriptions> parameter dictates the presentation
+order. The format is as follows:
 
     my $descriptions = [ 'opt1' => 'desc1', 'opt2' => 'desc2', etc... ]
 
 The options should be one that is found in the Getopt::Long configuration passed
 to the C<Getopt_Long> parameter. If the configuration consists of both long and
-short options, you need only provide one of them. The description is associated
-with all related options as configured for Getopt::Long.
+short options, you should only provide one of them. The description is
+associated with all related options as configured for Getopt::Long.
 
 So for example, if the following is your Getopt::Long configuration:
 
@@ -277,9 +279,6 @@ Then the following two C<descriptions> configurations would be valid:
 It does not matter if you use either the long or short form of the options, as
 it is only used in this parameter for the purpose of associating the given
 description with a relation of options in the Getopt::Long configuration.
-
-Note that the order of the options provided to the C<descriptions> parameter
-dictates the presentation order.
 
 =item * B<format>
 
@@ -545,7 +544,7 @@ Example code:
 
     use Getopt::Long;
     use Getopt::LongUsage;
-
+    
     my %options;
     my @getoptconf = (  \%options,
                         'isAvailable',
@@ -581,7 +580,7 @@ Example code:
 
     use Getopt::Long;
     use Getopt::LongUsage;
-
+    
     my $VERSION = "2.1.5";
     my %options;
     my @getoptconf = (  \%options,
