@@ -340,12 +340,27 @@ of the expected C<Getopt::Long::GetOptions()> input option.
 #
 sub GetLongUsage (@) {
     my $self    = shift if ref($_[0]) eq $REF_NAME || undef;
-#    pp (@_);
     my %args    = @_;
-    my %descriptions    = @{$args{'descriptions'}} if exists $args{'descriptions'};
     my %format          = @{$args{'format'}} if exists $args{'format'};
-    my $option_order = {};;
 
+    # Setup the description map
+    # my %descriptions    = @{$args{'descriptions'}} if exists $args{'descriptions'};
+    # We have to do it this alternate way, otherwise perl will throw an error if
+    # any key is undef. We do not care if the value is undef.
+    my %descriptions;
+    if (exists $args{'descriptions'}) {
+        my @temp_desc = @{$args{'descriptions'}}; # make a copy
+        while (@temp_desc) {
+            my $k = shift @temp_desc;
+            my $v = shift @temp_desc;
+            next if ! defined $k || $k eq "";
+            $descriptions{$k} = $v;
+        }
+    }
+    #DEBUG# pp {"descriptions", \%descriptions};
+
+    # Some private methods
+    # &$elementexists()
     # return true if a value (element) exists in a given array ref
     my $elementexists = sub {
         my $element = shift;
@@ -355,6 +370,7 @@ sub GetLongUsage (@) {
         }
         return 0;
     };
+    # &$gethashvalue()
     # return the value of a given key in a hash ref, case insensitive
     my $gethashvalue = sub {
         my $key = shift;
@@ -367,19 +383,7 @@ sub GetLongUsage (@) {
         }
         return undef;
     };
-
-    # Discover the user preferred order of displaying the options.
-    my $ordernumber = 0;
-    my $orderindex = 0; # we'll use this one later, keeping the last value, when populating '@output'
-    while (defined $args{'descriptions'}->[$ordernumber]) {
-        if ($elementexists->($args{'descriptions'}->[$ordernumber],$args{'hidden_opts'})) {
-            $ordernumber += 2;
-            next;
-        }
-        $option_order->{ lc $args{'descriptions'}->[$ordernumber] } = $orderindex;
-        $ordernumber += 2;
-        $orderindex++;
-    }
+    # End private methods
 
     # These are defined constants inside Getopt::Long, as of version 2.38
     # If these constants change inside Getopt::Long, this module will break.
@@ -395,11 +399,31 @@ sub GetLongUsage (@) {
                 CTL_AMAX    => $Getopt::Long::CTL_AMAX       || 5
             );
 
+    # Retrieve the Getopt::Long config map resulting from parsing the options
     my $optionmap = ParseGetoptLongConfig(@{$args{'Getopt_Long'}});
+    #DEBUG# pp {"optionmap", $optionmap};
+
+    # Create the map for the user preferred order of displaying the options.
+    my $ordermap = {};  # This is the map
+    my $orderindex = 0; # we'll use this one later, keeping the last value, when populating '@output'
+    my $tmp_ordernumber = 0;
+    while ($tmp_ordernumber < @{$args{'descriptions'}}) {
+        if ($elementexists->($args{'descriptions'}->[$tmp_ordernumber],$args{'hidden_opts'})) {
+            $tmp_ordernumber += 2;
+            next;
+        }
+        unless ((! defined $args{'descriptions'}->[$tmp_ordernumber]) || ($args{'descriptions'}->[$tmp_ordernumber] eq "")) {
+            $ordermap->{ $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }[$m{CTL_NAME}] } = $orderindex;
+        }
+        $tmp_ordernumber += 2;
+        $orderindex++;
+    }
+    #DEBUG# pp {"ordermap", $ordermap};
 
     # Create the usage message map for the options;
-    my $usagemap = {};
+    my $usagemap = {};  # This is the map
     foreach my $opt (keys %$optionmap) {
+        next if !defined $opt || $opt eq "";
         my $ctlname = $optionmap->{$opt}[$m{CTL_NAME}];
         unless (exists $usagemap->{ $ctlname }) {
             $usagemap->{ $ctlname } = [[],[]]; # [[alias1,alias2],[descline1,descline2]]
@@ -412,16 +436,7 @@ sub GetLongUsage (@) {
             $usagemap->{ $ctlname }[1] = \@lines;
         }
     }
-
-#    # DEBUG
-#    print "x"x20,"\n";
-#    print "xx optionmap xx\n";
-#    pp($optionmap);
-#    print "xx usagemap xx\n";
-#    pp($usagemap);
-#    print "xx descriptions xx\n";
-#    pp(\%descriptions);
-#    print "x"x20,"\n";
+    #DEBUG# pp {"usagemap",$usagemap};
 
     # Format the text usage message for the options
     # Getopt::Long defines 'longprefix = "(--)"' in ConfigDefaults() as the
@@ -468,15 +483,17 @@ sub GetLongUsage (@) {
         my $opttext = join(', ',@opttext);
         $maxoptwidth = length($opttext) if length($opttext) > $maxoptwidth;
         #push (@output, [ [$opttext], $usagemap->{$optname}[1] ] );
-        my $ordernumber;
-        if (exists $option_order->{ lc $optname }) {
-            $ordernumber = $option_order->{ lc $optname };
+        my $tmp_ordernumber;
+        if (exists $ordermap->{ $optname }) {
+            $tmp_ordernumber = $ordermap->{ $optname };
         } else {
-            $ordernumber = $orderindex;
+            $tmp_ordernumber = $orderindex;
             $orderindex++;
         }
-        $output[$ordernumber] = [ [$opttext], $usagemap->{$optname}[1] ];
+        $output[$tmp_ordernumber] = [ [$opttext], $usagemap->{$optname}[1] ];
     }
+    #DEBUG# pp ("output",@output);
+
     # Assemble the usage text message
     my @usage;
     push (@usage, split("/$/",$args{'header'})) if defined $args{'header'};
@@ -484,10 +501,15 @@ sub GetLongUsage (@) {
     my $opttext;
     foreach my $outline (@output) {
         $opttext .= " "x$tab;
-        $opttext .= $outline->[0][0];
-        $opttext .= " "x($maxoptwidth - length($outline->[0][0]));
-        $opttext .= " "x$tab;
-        $opttext .= join(("\n"." "x($tab + $maxoptwidth + $tab)),@{$outline->[1]});
+        if ((! defined $outline) || (ref $outline !~ /ARRAY/) || (! defined $outline->[0][0])) {
+            $opttext .= " "x$maxoptwidth;
+            $opttext .= " "x$tab;
+        } else {
+            $opttext .= $outline->[0][0];
+            $opttext .= " "x($maxoptwidth - length($outline->[0][0]));
+            $opttext .= " "x$tab;
+            $opttext .= join(("\n"." "x($tab + $maxoptwidth + $tab)),@{$outline->[1]});
+        }
         $opttext .= "\n";
     }
     chomp ($opttext);
@@ -495,7 +517,6 @@ sub GetLongUsage (@) {
     push (@usage, split("/$/",$args{'footer'})) if defined $args{'footer'};
     my $usage;
     foreach my $line (@usage) {
-        next unless defined $line;
         $usage .= " "x$indent;
         $line =~ s/\n/("\n"." "x$indent)/eg;
         $usage .= $line;
@@ -576,11 +597,11 @@ Example code:
         my @getopt_long_configuration = @_;
         GetLongUsage (
             'header'        => ("MyApple Program version ".$VERSION."\n".'Author Smith <author@example.com>'."\n"),
-            'cli_use'       => ($0 ."[options] <arg1> <arg2>"),
+            'cli_use'       => ($0 ."[options] <args>"),
             'descriptions'  =>
                 [   'isAvailable'   => "The apple type is available",
                     'color'         => "The color of this apple type",
-                    'type'          => "The type of apple, i.e. "Gala",
+                    'type'          => "The type of apple, i.e. \"Gala\"",
                     'cityGrown'     => "The city(s) in which this apple is grown",
                     'secretAttr'    => "You should not see this option",
                     'verbose'       => "verbose",
@@ -606,7 +627,7 @@ Example output:
     script.pl [options] <args>
         --isAvailable    The apple type is available
         --color          The color of this apple type
-        --type           The type of apple, i.e. "Gala
+        --type           The type of apple, i.e. "Gala"
         --cityGrown      The city(s) in which this apple is grown
         -v, --verbose    verbose
         -h, --help       help
