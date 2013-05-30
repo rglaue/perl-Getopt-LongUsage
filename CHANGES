@@ -1,4 +1,7 @@
 Revision history for Perl module Getopt::LongUsage.
 
+0.11	2013-05-30 reg
+	- fixed a bug that caused an error when no descriptions were given.
+
 0.10	2010-04-26 reg
 	- original version
