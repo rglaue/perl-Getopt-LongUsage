@@ -818,7 +818,9 @@ Getopt::LongUsage on Codepin: http://www.codepin.org/project/perlmod/Getopt-Long
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2010-2013 Center for the Application of Information Technologies.
+Copyright (c) 2010-2013 Russell E Glaue,
+Center for the Application of Information Technologies,
+Western	Illinois University.
 All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under
