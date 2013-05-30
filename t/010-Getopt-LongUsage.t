@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 BEGIN { use_ok('Getopt::LongUsage') };
 use_ok('Getopt::Long');
 
@@ -94,3 +94,22 @@ ok ( ($usagetext =~ /\s{4}ZZcolor\s{4}/) , 'GetLongUsage() - format:shortprefix'
 
 # Test the usage message - format:lomgprefix
 ok ( ($usagetext =~ /\s{4}At\, ZZtype\s{4}/) , 'GetLongUsage() - format:longprefix' ) || diag explain ( $getoptlongconf, $usagetext );
+
+##
+# Testing usage with no descriptions
+##
+
+my %nd_options;
+my $nd_getoptlongconf = [
+                \%options,
+                'h|help',
+                'isAvailable',
+                'color=s',
+                't|type=s',
+                'cityGrown=s@' ];
+my $nd_usagetext = $glu->GetLongUsage (
+        Getopt_Long     => $nd_getoptlongconf,
+);
+
+# Test the usage message, without description - parameter
+ok ( ($nd_usagetext =~ /\-\-cityGrown/) , 'GetLongUsage() - with no descriptions' ) || diag explain ( $nd_getoptlongconf, $nd_usagetext );
