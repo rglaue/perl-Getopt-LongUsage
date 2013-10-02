@@ -466,6 +466,7 @@ sub GetLongUsage (@) {
             );
 
     # Retrieve the Getopt::Long config map resulting from parsing the options
+    if (! exists $args{'Getopt_Long'}) { warn "GetLongUsage(): Argument Getopt_Long is required."; return undef; }
     my $optionmap = ParseGetoptLongConfig(@{$args{'Getopt_Long'}});
     #DEBUG# print Dumper {"optionmap", $optionmap};
 
@@ -480,7 +481,7 @@ sub GetLongUsage (@) {
             next;
         }
         unless ((! defined $args{'descriptions'}->[$tmp_ordernumber]) || ($args{'descriptions'}->[$tmp_ordernumber] eq "")) {
-            $ordermap->{ $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }[$m{CTL_CNAME}] } = $orderindex;
+            $ordermap->{ $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }[$m{'CTL_CNAME'}] } = $orderindex;
         }
         $tmp_ordernumber += 2;
         $orderindex++;
