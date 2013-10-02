@@ -98,7 +98,7 @@ BEGIN {
     $REF_NAME   = "Getopt::LongUsage";  # package name
 
     use vars      qw( $VERSION );
-    $VERSION    = '0.11';
+    $VERSION    = '0.12';
 }
 
 =pod
@@ -161,6 +161,73 @@ module, so to parse the same exact C<Getopt::Long> configuration input.
                         'help|h'       => \$help
                         );
     my $configmap = ParseGetoptLongConfig ( @getoptconf );
+
+=head3 Resulting Config Map documentation, extracted from Getopt::Long
+
+The C<Getopt::Long::ParseGetoptLongConfig> is a function utilizing code copied
+right out of C<Getopt::Long> to ensure complete compatibility. The author of
+this C<Getopt::LongUsage> module has communicated with the author of the
+C<Getopt::Long> module about this action.
+
+The following documentation is assembled based on definitions and code
+found inside the C<Getopt::Long> source code.
+
+A look at the resulting output from C<Getopt::LongUsage::ParseGetoptLongConfig>
+
+Perl Code
+
+    use Getopt::Long;
+    use Getopt::LongUsage;
+    use Data::Dumper;
+    my $configmap = Getopt::LongUsage::ParseGetoptLongConfig (
+                        \%options,
+                        'inti_opt=i',
+                        'stri_opt:s',
+                        'flag_opt|f'
+                    );
+    print Dumper ( $configmap );
+
+Output
+
+    $VAR1 = {
+          'inti_opt' => [
+                          'i',
+                          'inti_opt',
+                          undef,
+                          0,
+                          1,
+                          1
+                        ],
+          'flag_opt' => [
+                          '',
+                          'flag_opt',
+                          undef,
+                          0,
+                          0,
+                          0
+                        ],
+          'stri_opt' => [
+                          's',
+                          'stri_opt',
+                          undef,
+                          0,
+                          0,
+                          1
+                        ],
+          'f' => $VAR1->{'flag_opt'}
+        };
+
+Description and definition from C<Getopt::Long>, in short form
+
+          # Hash_Key => [Config_Vals] # Array_Index - NAME :possible values (or) -definition
+          'stri_opt' => [
+                          's',        # 0 - CTL_TYPE    : ''=FLAG,!=NEG,+=INCR,i=INT,I=INTINC,o=XINT,f=FLOAT,s=STRING
+                          'stri_opt', # 1 - CTL_CNAME   - The name of the option
+                          undef,      # 2 - CTL_DEFAULT - The default value of the option
+                          0,          # 3 - CTL_DEST    : 0=SCALAR, 1=ARRAY, 2=HASH, 3=CODE
+                          1,          # 4 - CTL_AMIN    - Minimum expected values
+                          1           # 5 - CTL_AMAX    - Maximum allowed values (-1 == unlimited)
+                        ],
 
 =cut
 sub ParseGetoptLongConfig (@) {
