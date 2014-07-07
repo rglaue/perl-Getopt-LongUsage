@@ -5,7 +5,7 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 15;
+use Test::More tests => 16;
 BEGIN { use_ok('Getopt::LongUsage') };
 use_ok('Getopt::Long');
 
@@ -96,7 +96,9 @@ ok ( ($usagetext =~ /\s{4}ZZcolor\s{4}/) , 'GetLongUsage() - format:shortprefix'
 ok ( ($usagetext =~ /\s{4}At\, ZZtype\s{4}/) , 'GetLongUsage() - format:longprefix' ) || diag explain ( $getoptlongconf, $usagetext );
 
 ##
-# Testing usage with no descriptions
+# Testing usage
+# 1. with no descriptions
+# 2. no option but with description
 ##
 
 my %nd_options;
@@ -112,4 +114,21 @@ my $nd_usagetext = $glu->GetLongUsage (
 );
 
 # Test the usage message, without description - parameter
-ok ( ($nd_usagetext =~ /\-\-cityGrown/) , 'GetLongUsage() - with no descriptions' ) || diag explain ( $nd_getoptlongconf, $nd_usagetext );
+ok ( ($nd_usagetext =~ /\-\-cityGrown/) , 'GetLongUsage() - call with no descriptions' ) || diag explain ( $nd_getoptlongconf, $nd_usagetext );
+
+
+my $nd_stderr = '';
+{
+    local *STDERR;
+    open STDERR, '>', \$nd_stderr;
+
+    $nd_usagetext = $glu->GetLongUsage (
+        descriptions    => ["notdefinedingetopt_long" => "option in descriptions, but not in Getopt_Long"],
+        Getopt_Long     => $nd_getoptlongconf,
+    );
+
+    close STDERR;
+}
+
+# Test the usage message, having an option in description, but not Getopt_Long - parameter
+ok ( ($nd_stderr =~ /Item \"notdefinedingetopt\_long\" in descriptions/) , 'GetLongUsage() - option not in Getop_Long, but in descriptions' ) || diag explain ( $nd_getoptlongconf, $nd_usagetext );

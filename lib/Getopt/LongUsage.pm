@@ -1,83 +1,3 @@
-=pod
-
-=head1 NAME
-
-Getopt::LongUsage - Describe the usage of Getopt::Long options in human readable format
-
-=head1 SYNOPSIS
-
-Provide the description for Getopt::Long options in order to generate a
-descriptive usage for the user.
-
-Example code:
-
-    use Getopt::Long;
-    use Getopt::LongUsage;
-
-    my ($width,$length,$verbose,$help);
-    my @getoptconf = (  'width=i'   => \$width,
-                        'length=i'  => \$length,
-                        'verbose|v' => \$verbose,
-                        'help|h'    => \$help
-                        );
-    my $usage = sub {
-        my @getopt_long_configuration = @_;
-        GetLongUsage (
-            'cli_use'       => ($0 ." [options]"),
-            'descriptions'  =>
-                [   'width'         => "The width",
-                    'length'        => "The length",
-                    'verbose'       => "verbose",
-                    'help'          => "this help message"
-                    ],
-            'Getopt_Long'   => \@getopt_long_configuration,
-        );
-    };
-    GetOptions( @getoptconf ) || die ($usage->( @getoptconf ),"\n");
-    ...etc...
-
-Example output:
-
-    linux$ ./test_it.pl --not-an-option
-    Unknown option: not-an-option
-    ./test_it.pl [options]
-      --width        The width
-      --length       The length
-      -v, --verbose  verbose
-      -h, --help     this help message
-
-=head1 DESCRIPTION
-
-This is a pure perl module which generates a user help message for a perl script
-that implements the C<Getopt::Long> module. Simply describe each option
-configured for C<Getopt::Long>, and a useful formatted help message is
-generated.
-
-=head1 REQUIREMENTS
-
-The following perl modules are depended on by this module:
-
-=over 4
-
-=item *     Getopt::Long
-
-=back
-
-=head1 IMPORTED METHODS
-
-When the calling application invokes this module in a use clause, the following
-method will be imported into its space.
-
-=over 4
-
-=item *     C<GetLongUsage>
-
-=back
-
-=head1 METHODS
-
-=cut
-
 package Getopt::LongUsage;
 
 use 5.008001;
@@ -86,7 +6,7 @@ use warnings;
 use Exporter;
 use Carp;
 use Getopt::Long 2.37;
-#use Data::Dumper;
+use Data::Dumper;
 
 BEGIN {
     use vars      qw(@ISA @EXPORT @EXPORT_OK);
@@ -101,25 +21,6 @@ BEGIN {
     $VERSION    = '0.12';
 }
 
-=pod
-
-=head2 new
-
-Create a new object instances of this module.
-It is not necessary to create an object for this module, as the methods can
-be called outside of OO style programming.
-
-=over 4
-
-=item * I<returns>
-
-An object instance of this module.
-
-=back
-
-    my $glu = new Getopt::LongUsage();
-
-=cut
 
 # new
 sub new {
@@ -130,106 +31,6 @@ sub new {
 }
 
 
-=pod
-
-=head2 ParseGetoptLongConfig
-
-Parse option configuration for C<Getopt::Long>.
-
-This method reproduces just enough code as found in
-C<Getopt::Long::GetOptionsFromArray()>, while also calling functions in that
-module, so to parse the same exact C<Getopt::Long> configuration input.
-
-    my $configmap = ParseGetoptLongConfig (
-                        \%options,
-                        'isAvailable',
-                        'color=s',
-                        'type=s',
-                        'cityGrown=s@',
-                        'secretAttr=i',
-                        'verbose|v',
-                        'help|h'
-                    );
-
-    my @getoptconf = (
-                      	'isAvailable'  => \$isAvailable,
-                        'color=s'      => \$color,
-                        'type=s'       => \$type,
-                        'cityGrown=s@' => \@cityGrown,
-                        'secretAttr:i' => \$secretAttr,
-                        'verbose|v'    => \$verbose,
-                        'help|h'       => \$help
-                        );
-    my $configmap = ParseGetoptLongConfig ( @getoptconf );
-
-=head3 Resulting Config Map documentation, extracted from Getopt::Long
-
-The C<Getopt::Long::ParseGetoptLongConfig> is a function utilizing code copied
-right out of C<Getopt::Long> to ensure complete compatibility. The author of
-this C<Getopt::LongUsage> module has communicated with the author of the
-C<Getopt::Long> module about this action.
-
-The following documentation is assembled based on definitions and code
-found inside the C<Getopt::Long> source code.
-
-A look at the resulting output from C<Getopt::LongUsage::ParseGetoptLongConfig>
-
-Perl Code
-
-    use Getopt::Long;
-    use Getopt::LongUsage;
-    use Data::Dumper;
-    my $configmap = Getopt::LongUsage::ParseGetoptLongConfig (
-                        \%options,
-                        'inti_opt=i',
-                        'stri_opt:s',
-                        'flag_opt|f'
-                    );
-    print Dumper ( $configmap );
-
-Output
-
-    $VAR1 = {
-          'inti_opt' => [
-                          'i',
-                          'inti_opt',
-                          undef,
-                          0,
-                          1,
-                          1
-                        ],
-          'flag_opt' => [
-                          '',
-                          'flag_opt',
-                          undef,
-                          0,
-                          0,
-                          0
-                        ],
-          'stri_opt' => [
-                          's',
-                          'stri_opt',
-                          undef,
-                          0,
-                          0,
-                          1
-                        ],
-          'f' => $VAR1->{'flag_opt'}
-        };
-
-Description and definition from C<Getopt::Long>, in short form
-
-          # Hash_Key => [Config_Vals] # Array_Index - NAME :possible values (or) -definition
-          'stri_opt' => [
-                          's',        # 0 - CTL_TYPE    : ''=FLAG,!=NEG,+=INCR,i=INT,I=INTINC,o=XINT,f=FLOAT,s=STRING
-                          'stri_opt', # 1 - CTL_CNAME   - The name of the option
-                          undef,      # 2 - CTL_DEFAULT - The default value of the option
-                          0,          # 3 - CTL_DEST    : 0=SCALAR, 1=ARRAY, 2=HASH, 3=CODE
-                          1,          # 4 - CTL_AMIN    - Minimum expected values
-                          1           # 5 - CTL_AMAX    - Maximum allowed values (-1 == unlimited)
-                        ],
-
-=cut
 sub ParseGetoptLongConfig (@) {
     my $self    = shift if ref($_[0]) eq $REF_NAME || undef;
     my @optionlist  = @_;
@@ -296,105 +97,6 @@ sub ParseGetoptLongConfig (@) {
 }
 
 
-=pod
-
-=head2 GetLongUsage
-
-Generate a usage message from Getopt::Long options.
-
-=over 4
-
-=item * B<header>
-
-This is a text string to be used as a header of the usage output. It will appear
-at the top of the usage output.
-
-=item * B<footer>
-
-This is a text string to be used as a footer of the usage output. It will appear
-at the bottom of the usage output.
-
-=item * B<cli_use>
-
-This is a string representing the format for executing your application.
-
-=item * B<descriptions>
-
-This is an array reference of options with descriptions. The order of the
-options provided to the C<descriptions> parameter dictates the presentation
-order. The format is as follows:
-
-    my $descriptions = [ 'opt1' => 'desc1', 'opt2' => 'desc2', etc... ]
-
-The options should be one that is found in the Getopt::Long configuration passed
-to the C<Getopt_Long> parameter. If the configuration consists of both long and
-short options, you should only provide one of them. The description is
-associated with all related options as configured for Getopt::Long.
-
-So for example, if the following is your Getopt::Long configuration:
-
-    GetOptions( %options, 'help|h', 'opt1|o')
-
-Then the following two C<descriptions> configurations would be valid:
-
-    $descriptions = [   'h' => "This help message",
-                        'o' => "The first option"   ]
-
-    $descriptions = [   'help' => "This help message",
-                        'opt1' => "The first option"   ]
-
-It does not matter if you use either the long or short form of the options, as
-it is only used in this parameter for the purpose of associating the given
-description with a relation of options in the Getopt::Long configuration.
-
-=item * B<format>
-
-Formatting options are set in subparameters within this parameter.
-
-=over 4
-
-=item * tab
-
-The number of spaces that comprise a tab in the formatted output.
-The default is C<2> spaces for each tab.
-
-=item * indent
-
-The number of spaces to indent the formatted output.
-The default is C<0> spaces.
-
-=item * longprefix
-
-The prefix that defines long options. The default is C<-->, as in C<--help>.
-
-=item * shortprefix
-
-The prefix that defines short options. The default is C<->, as in C<-h>.
-
-=back
-
-=item * B<hidden_opts>
-
-This is an array reference list of Getopt::Long options that will be hidden from
-the formatted usage message intended for human reading.
-
-=item * B<Getopt_Long>
-
-The array reference list of a Getopt::Long configuration which is a definition
-of the expected C<Getopt::Long::GetOptions()> input option.
-
-=back
-
-    GetLongUsage (  header          => "This is my header text",
-                    footer          => "This is my footer text"
-                    cli_use         => "myprog [options] arg1 arg2",
-                    descriptions    => \@descriptions,
-                    format          => \@format_options,
-                    hidden_opts     => \@hidden_options,
-                    Getopt_Long     => \@getopt_long_options
-                    );
-
-=cut
 # GetLongUsage
 #
 # TODO - add support for 'cols' property
@@ -480,11 +182,15 @@ sub GetLongUsage (@) {
             $tmp_ordernumber += 2;
             next;
         }
-        unless ((! defined $args{'descriptions'}->[$tmp_ordernumber]) || ($args{'descriptions'}->[$tmp_ordernumber] eq "")) {
-            $ordermap->{ $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }[$m{'CTL_CNAME'}] } = $orderindex;
+        if (!exists $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }) {
+            carp ("Item \"".$args{'descriptions'}->[$tmp_ordernumber]."\" in descriptions argument is not defined as an option in Getopt_Long argument.");
+        } else {
+            unless ((! defined $args{'descriptions'}->[$tmp_ordernumber]) || ($args{'descriptions'}->[$tmp_ordernumber] eq "")) {
+                $ordermap->{ $optionmap->{ lc $args{'descriptions'}->[$tmp_ordernumber] }[$m{'CTL_CNAME'}] } = $orderindex;
+            }
+            $orderindex++;
         }
         $tmp_ordernumber += 2;
-        $orderindex++;
     }
     #DEBUG# print Dumper {"ordermap", $ordermap};
     }
@@ -494,6 +200,7 @@ sub GetLongUsage (@) {
     foreach my $opt (keys %$optionmap) {
         next if !defined $opt || $opt eq "";
         my $ctlname = $optionmap->{$opt}[$m{CTL_CNAME}];
+        next if !defined $ctlname;
         unless (exists $usagemap->{ $ctlname }) {
             $usagemap->{ $ctlname } = [[],[]]; # [[alias1,alias2],[descline1,descline2]]
         }
@@ -597,14 +304,305 @@ sub GetLongUsage (@) {
 }
 
 
-
-
-
-
 1;
 __END__
 
 =pod
+
+=head1 NAME
+
+Getopt::LongUsage - Describe the usage of Getopt::Long options in human readable format
+
+=head1 SYNOPSIS
+
+Provide the description for Getopt::Long options in order to generate a
+descriptive usage for the user.
+
+Example code:
+
+    use Getopt::Long;
+    use Getopt::LongUsage;
+
+    my ($width,$length,$verbose,$help);
+    my @getoptconf = (  'width=i'   => \$width,
+                        'length=i'  => \$length,
+                        'verbose|v' => \$verbose,
+                        'help|h'    => \$help
+                        );
+    my $usage = sub {
+        my @getopt_long_configuration = @_;
+        GetLongUsage (
+            'cli_use'       => ($0 ." [options]"),
+            'descriptions'  =>
+                [   'width'         => "The width",
+                    'length'        => "The length",
+                    'verbose'       => "verbose",
+                    'help'          => "this help message"
+                    ],
+            'Getopt_Long'   => \@getopt_long_configuration,
+        );
+    };
+    GetOptions( @getoptconf ) || die ($usage->( @getoptconf ),"\n");
+    ...etc...
+
+Example output:
+
+    linux$ ./test_it.pl --not-an-option
+    Unknown option: not-an-option
+    ./test_it.pl [options]
+      --width        The width
+      --length       The length
+      -v, --verbose  verbose
+      -h, --help     this help message
+
+=head1 DESCRIPTION
+
+This is a pure perl module which generates a user help message for a perl script
+that implements the C<Getopt::Long> module. Simply describe each option
+configured for C<Getopt::Long>, and a useful formatted help message is
+generated.
+
+=head1 REQUIREMENTS
+
+The following perl modules are depended on by this module:
+
+=over 4
+
+=item *     Getopt::Long
+
+=back
+
+=head1 IMPORTED METHODS
+
+When the calling application invokes this module in a use clause, the following
+method will be imported into its space.
+
+=over 4
+
+=item *     C<GetLongUsage>
+
+=back
+
+=head1 METHODS
+
+
+=head2 new
+
+Create a new object instances of this module.
+It is not necessary to create an object for this module, as the methods can
+be called outside of OO style programming.
+
+=over 4
+
+=item * I<returns>
+
+An object instance of this module.
+
+=back
+
+    my $glu = new Getopt::LongUsage();
+
+
+=head2 ParseGetoptLongConfig
+
+Parse option configuration for C<Getopt::Long>.
+This is also known as the "Spec parser" for <Getopt::Long>.
+
+This method reproduces just enough code as found in
+C<Getopt::Long::GetOptionsFromArray()>, while also calling functions in that
+module, so to parse the same exact C<Getopt::Long> configuration input.
+
+Unlike other <Getopt::Long> "Spec parsers", this function parses the argument
+configuration in the exact same procedure as <Getopt::Long>.
+
+    my $configmap = ParseGetoptLongConfig (
+                        \%options,
+                        'isAvailable',
+                        'color=s',
+                        'type=s',
+                        'cityGrown=s@',
+                        'secretAttr=i',
+                        'verbose|v',
+                        'help|h'
+                    );
+
+or
+
+    my @getoptconf = (
+                      	'isAvailable'  => \$isAvailable,
+                        'color=s'      => \$color,
+                        'type=s'       => \$type,
+                        'cityGrown=s@' => \@cityGrown,
+                        'secretAttr:i' => \$secretAttr,
+                        'verbose|v'    => \$verbose,
+                        'help|h'       => \$help
+                        );
+    my $configmap = ParseGetoptLongConfig ( @getoptconf );
+
+=head3 Resulting Config Map documentation, extracted from Getopt::Long
+
+The C<Getopt::Long::ParseGetoptLongConfig> is a function utilizing code copied
+right out of C<Getopt::Long> to ensure complete compatibility. The author of
+this C<Getopt::LongUsage> module has communicated with the author of the
+C<Getopt::Long> module about this action.
+
+The following documentation is assembled based on definitions and code
+found inside the C<Getopt::Long> source code.
+
+A look at the resulting output from C<Getopt::LongUsage::ParseGetoptLongConfig>
+
+Perl Code
+
+    use Getopt::Long;
+    use Getopt::LongUsage;
+    use Data::Dumper;
+    my $configmap = Getopt::LongUsage::ParseGetoptLongConfig (
+                        \%options,
+                        'inti_opt=i',
+                        'stri_opt:s',
+                        'flag_opt|f'
+                    );
+    print Dumper ( $configmap );
+
+Output
+
+    $VAR1 = {
+          'inti_opt' => [
+                          'i',
+                          'inti_opt',
+                          undef,
+                          0,
+                          1,
+                          1
+                        ],
+          'flag_opt' => [
+                          '',
+                          'flag_opt',
+                          undef,
+                          0,
+                          0,
+                          0
+                        ],
+          'stri_opt' => [
+                          's',
+                          'stri_opt',
+                          undef,
+                          0,
+                          0,
+                          1
+                        ],
+          'f' => $VAR1->{'flag_opt'}
+        };
+
+Description and definition from C<Getopt::Long>, in short form
+
+          # Hash_Key => [Config_Vals] # Array_Index - NAME :possible values (or) -definition
+          'stri_opt' => [
+                          's',        # 0 - CTL_TYPE    : ''=FLAG,!=NEG,+=INCR,i=INT,I=INTINC,o=XINT,f=FLOAT,s=STRING
+                          'stri_opt', # 1 - CTL_CNAME   - The name of the option
+                          undef,      # 2 - CTL_DEFAULT - The default value of the option
+                          0,          # 3 - CTL_DEST    : 0=SCALAR, 1=ARRAY, 2=HASH, 3=CODE
+                          1,          # 4 - CTL_AMIN    - Minimum expected values
+                          1           # 5 - CTL_AMAX    - Maximum allowed values (-1 == unlimited)
+                        ],
+
+
+=head2 GetLongUsage
+
+Generate a usage message from Getopt::Long options.
+
+=over 4
+
+=item * B<header>
+
+This is a text string to be used as a header of the usage output. It will appear
+at the top of the usage output.
+
+=item * B<footer>
+
+This is a text string to be used as a footer of the usage output. It will appear
+at the bottom of the usage output.
+
+=item * B<cli_use>
+
+This is a string representing the format for executing your application.
+
+=item * B<descriptions>
+
+This is an array reference of options with descriptions. The order of the
+options provided to the C<descriptions> parameter dictates the presentation
+order. The format is as follows:
+
+    my $descriptions = [ 'opt1' => 'desc1', 'opt2' => 'desc2', etc... ]
+
+The options should be one that is found in the Getopt::Long configuration passed
+to the C<Getopt_Long> parameter. If the configuration consists of both long and
+short options, you should only provide one of them. The description is
+associated with all related options as configured for Getopt::Long.
+
+So for example, if the following is your Getopt::Long configuration:
+
+    GetOptions( %options, 'help|h', 'opt1|o')
+
+Then the following two C<descriptions> configurations would be valid:
+
+    $descriptions = [   'h' => "This help message",
+                        'o' => "The first option"   ]
+
+    $descriptions = [   'help' => "This help message",
+                        'opt1' => "The first option"   ]
+
+It does not matter if you use either the long or short form of the options, as
+it is only used in this parameter for the purpose of associating the given
+description with a relation of options in the Getopt::Long configuration.
+
+=item * B<format>
+
+Formatting options are set in subparameters within this parameter.
+
+=over 4
+
+=item * tab
+
+The number of spaces that comprise a tab in the formatted output.
+The default is C<2> spaces for each tab.
+
+=item * indent
+
+The number of spaces to indent the formatted output.
+The default is C<0> spaces.
+
+=item * longprefix
+
+The prefix that defines long options. The default is C<-->, as in C<--help>.
+
+=item * shortprefix
+
+The prefix that defines short options. The default is C<->, as in C<-h>.
+
+=back
+
+=item * B<hidden_opts>
+
+This is an array reference list of Getopt::Long options that will be hidden from
+the formatted usage message intended for human reading.
+
+=item * B<Getopt_Long>
+
+The array reference list of a Getopt::Long configuration which is a definition
+of the expected C<Getopt::Long::GetOptions()> input option.
+
+=back
+
+    GetLongUsage (  header          => "This is my header text",
+                    footer          => "This is my footer text"
+                    cli_use         => "myprog [options] arg1 arg2",
+                    descriptions    => \@descriptions,
+                    format          => \@format_options,
+                    hidden_opts     => \@hidden_options,
+                    Getopt_Long     => \@getopt_long_options
+                    );
+
 
 =head1 EXAMPLES
 
